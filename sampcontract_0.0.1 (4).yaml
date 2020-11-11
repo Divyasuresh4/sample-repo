@@ -1,0 +1,3107 @@
+swagger: '2.0'
+info:
+  title: Contract
+  x-ibm-name: contract
+  x-ibm-summary: Manage rental contracts
+  version: 0.0.1
+  description: Manage rental contracts
+schemes:
+  - https
+produces:
+  - application/json
+consumes:
+  - application/json
+security:
+  - clientIdHeader: []
+securityDefinitions:
+  clientIdHeader:
+    type: apiKey
+    in: header
+    name: X-IBM-Client-Id
+x-ibm-configuration:
+  gateway: datapower-api-gateway
+  type: rest
+  phase: realized
+  enforced: true
+  testable: true
+  cors:
+    enabled: true
+  assembly:
+    execute:
+      - invoke:
+          version: 2.0.0
+          title: Invoke IAM Introspection
+          header-control:
+            type: blacklist
+            values: []
+          parameter-control:
+            type: whitelist
+            values: []
+          timeout: 60
+          verb: GET
+          cache-response: protocol
+          cache-ttl: 900
+          stop-on-error: []
+          target-url: $(authorization-url)
+      - switch:
+          version: 2.0.0
+          title: switch
+          case:
+            - condition: (($statusCode() != 200))
+              execute:
+                - throw:
+                    version: 2.0.0
+                    title: Token_Error
+                    name: Token_Error
+      - parse:
+          version: 2.0.0
+          title: parse
+          parse-settings-reference:
+            default: apic-default-parsesettings
+      - gatewayscript:
+          version: 2.0.0
+          title: Request
+          source: >-
+            var apim = require('apim');
+
+            var json = apim.getvariable('request.body');
+
+            var auth = apim.getvariable('request.headers');
+
+            var authStr = auth.Authorization;
+
+
+            var notification=
+            apim.getvariable('request.headers.x-notification-url');
+
+
+            var callback= apim.getvariable('request.headers.x-callback-url');
+
+
+            context.message.header.set('Authorization',authStr);
+
+
+            context.message.header.set('x-notification-url',notification);
+
+
+            context.message.header.set('x-callback-url',callback);
+
+
+            var id=apim.getvariable('request.headers.X-IBM-Client-Id');
+
+            context.message.header.set('X-IBM-Client-Id',id);
+
+
+
+            session.output.write(json);
+      - switch:
+          version: 2.0.0
+          title: switch
+          case:
+            - condition: ($operationID() = 'createContract')
+              execute:
+                - invoke:
+                    version: 2.0.0
+                    title: Create Contract
+                    header-control:
+                      type: blacklist
+                      values: []
+                    parameter-control:
+                      type: whitelist
+                      values: []
+                    timeout: 60
+                    verb: keep
+                    cache-response: protocol
+                    cache-ttl: 900
+                    stop-on-error: []
+                    target-url: >-
+                      $(bc-url)/rental-agencies/$(request.parameters.agencyDid)/rentals
+            - condition: ($operationID() = 'fetchRentalById')
+              execute:
+                - invoke:
+                    version: 2.0.0
+                    title: Fetch Rental
+                    backend-type: detect
+                    header-control:
+                      type: blacklist
+                      values: []
+                    parameter-control:
+                      type: whitelist
+                      values: []
+                    timeout: 60
+                    verb: keep
+                    use-http-10: false
+                    chunked-uploads: true
+                    cache-response: protocol
+                    cache-ttl: 900
+                    stop-on-error: []
+                    target-url: >-
+                      $(bc-url)/rental-agencies/$(request.parameters.agencyDid)/rentals/$(request.parameters.did)
+            - condition: ($operationID() = 'updateRentalById')
+              execute:
+                - invoke:
+                    version: 2.0.0
+                    title: Update Rental
+                    backend-type: detect
+                    header-control:
+                      type: blacklist
+                      values: []
+                    parameter-control:
+                      type: whitelist
+                      values: []
+                    timeout: 60
+                    verb: keep
+                    use-http-10: false
+                    chunked-uploads: true
+                    cache-response: protocol
+                    cache-ttl: 900
+                    stop-on-error: []
+                    target-url: >-
+                      $(bc-url)/rental-agencies/$(request.parameters.agencyDid)/rentals/$(request.parameters.did)
+            - condition: ($operationID() = 'deleteRental')
+              execute:
+                - invoke:
+                    version: 2.0.0
+                    title: Delete Rental
+                    backend-type: detect
+                    header-control:
+                      type: blacklist
+                      values: []
+                    parameter-control:
+                      type: whitelist
+                      values: []
+                    timeout: 60
+                    verb: keep
+                    use-http-10: false
+                    chunked-uploads: true
+                    cache-response: protocol
+                    cache-ttl: 900
+                    stop-on-error: []
+                    target-url: >-
+                      $(bc-url)/rental-agencies/$(request.parameters.agencyDid)/rentals/$(request.parameters.did)
+            - condition: ($operationID() = 'replaceRentals')
+              execute:
+                - invoke:
+                    version: 2.0.0
+                    title: Replace
+                    backend-type: detect
+                    header-control:
+                      type: blacklist
+                      values: []
+                    parameter-control:
+                      type: whitelist
+                      values: []
+                    timeout: 60
+                    verb: keep
+                    use-http-10: false
+                    chunked-uploads: true
+                    cache-response: protocol
+                    cache-ttl: 900
+                    stop-on-error: []
+                    target-url: >-
+                      $(bc-url)/rental-agencies/$(request.parameters.agencyDid)/rentals/$(request.parameters.did)/replacements
+            - condition: ($operationID() = 'settleRentals')
+              execute:
+                - invoke:
+                    version: 2.0.0
+                    title: Settle
+                    backend-type: detect
+                    header-control:
+                      type: blacklist
+                      values: []
+                    parameter-control:
+                      type: whitelist
+                      values: []
+                    timeout: 60
+                    verb: PUT
+                    use-http-10: false
+                    chunked-uploads: true
+                    cache-response: protocol
+                    cache-ttl: 900
+                    stop-on-error: []
+                    target-url: >-
+                      $(bc-url)/rental-agencies/$(request.parameters.agencyDid)/rentals/$(request.parameters.did)/events/settle
+            - condition: ($operationID() = 'returnRental')
+              execute:
+                - invoke:
+                    version: 2.0.0
+                    title: Return
+                    backend-type: detect
+                    header-control:
+                      type: blacklist
+                      values: []
+                    parameter-control:
+                      type: whitelist
+                      values: []
+                    timeout: 60
+                    verb: keep
+                    use-http-10: false
+                    chunked-uploads: true
+                    cache-response: protocol
+                    cache-ttl: 900
+                    stop-on-error: []
+                    target-url: >-
+                      $(bc-url)/rental-agencies/$(request.parameters.agencyDid)/rentals/$(request.parameters.did)/events/return
+            - condition: ($operationID() = 'getReturnList')
+              execute:
+                - invoke:
+                    version: 2.0.0
+                    title: Return List
+                    backend-type: detect
+                    header-control:
+                      type: blacklist
+                      values: []
+                    parameter-control:
+                      type: whitelist
+                      values: []
+                    timeout: 60
+                    verb: keep
+                    use-http-10: false
+                    chunked-uploads: true
+                    cache-response: protocol
+                    cache-ttl: 900
+                    stop-on-error: []
+                    target-url: >-
+                      $(bc-url)/rental-agencies/$(request.parameters.agencyDid)/rentals/$(request.parameters.did)/returns
+            - condition: ($operationID() = 'addBulk')
+              execute:
+                - invoke:
+                    version: 2.0.0
+                    title: Add Bulk
+                    backend-type: detect
+                    header-control:
+                      type: blacklist
+                      values: []
+                    parameter-control:
+                      type: whitelist
+                      values: []
+                    timeout: 60
+                    verb: keep
+                    use-http-10: false
+                    chunked-uploads: true
+                    cache-response: protocol
+                    cache-ttl: 900
+                    stop-on-error: []
+                    target-url: >-
+                      $(bulk-url)/bulk/agencies/$(request.parameters.agencyDid)/rentals
+            - condition: ($operationID() = 'getBulk')
+              execute:
+                - invoke:
+                    version: 2.0.0
+                    title: Get Bulk
+                    backend-type: detect
+                    header-control:
+                      type: blacklist
+                      values: []
+                    parameter-control:
+                      type: whitelist
+                      values: []
+                    timeout: 60
+                    verb: keep
+                    use-http-10: false
+                    chunked-uploads: true
+                    cache-response: protocol
+                    cache-ttl: 900
+                    stop-on-error: []
+                    target-url: $(bulk-url)/tasks/$(request.parameters.id)
+      - switch:
+          version: 2.0.0
+          title: switch
+          case:
+            - condition: ($statusCode() = 200 or $statusCode() = 202)
+              execute: []
+            - otherwise:
+                - gatewayscript:
+                    version: 2.0.0
+                    title: Map Error
+                    source: |+
+                      var apim = require('apim');
+                      var json = apim.getvariable('message.status');
+
+                      var code=json.code;
+                      var msg=json.reason;
+
+
+                      var strtoken=apim.getvariable('message.body');
+
+                      if(strtoken)
+                      {
+                      var detail=strtoken.detail;
+                      context.message.header.set('detail',detail);
+                      }
+                      context.message.header.set('httpCode',code);
+
+                      context.message.header.set('httpMessage',msg);
+
+
+
+
+
+
+
+
+
+
+
+
+                - map:
+                    version: 2.0.0
+                    title: map
+                    inputs:
+                      code:
+                        schema:
+                          type: string
+                        variable: message.headers.httpCode
+                      message:
+                        schema:
+                          type: string
+                        variable: message.headers.httpMessage
+                      details:
+                        schema:
+                          type: string
+                        variable: message.headers.detail
+                    outputs:
+                      output:
+                        schema:
+                          $ref: '#/definitions/Error'
+                        variable: message.body
+                        content: application/json
+                    actions:
+                      - set: output.httpCode
+                        from: code
+                      - set: output.httpMessage
+                        from: message
+                      - set: output.moreInformation
+                        from: details
+                - set-variable:
+                    version: 2.0.0
+                    title: set-variable
+                    actions:
+                      - clear: message.headers.httpCode
+                      - clear: message.headers.httpMessage
+                      - clear: message.headers.detail
+    catch:
+      - errors:
+          - Token_Error
+        execute:
+          - map:
+              version: 2.0.0
+              title: map
+              inputs:
+                input:
+                  schema:
+                    $ref: '#/definitions/Error'
+                  variable: message.body
+                  content: application/json
+              outputs:
+                output:
+                  schema:
+                    $ref: '#/definitions/Error'
+                  variable: message.body
+              actions:
+                - set: output.httpCode
+                  value: '"401"'
+                - set: output.httpMessage
+                  value: '"Unauthorized"'
+                - set: output.moreInformation
+                  from: input.moreInformation
+          - set-variable:
+              version: 2.0.0
+              title: Set Status Code
+              actions:
+                - set: message.status.code
+                  value: '401'
+                  type: string
+  properties: {}
+  application-authentication:
+    certificate: false
+  activity-log:
+    success-content: payload
+    error-content: payload
+    enabled: true
+  buffering: true
+  catalogs: {}
+definitions:
+  Driver:
+    type: object
+    properties:
+      id:
+        type: integer
+        description: Unique Identifier for the Agency
+        format: int64
+        example: 1
+      did:
+        type: string
+        description: Decentralized Identifier for the Agency
+        example: 'did:rta:1021252'
+      source:
+        type: string
+        description: Source for the Decentralized ID
+        example: rta
+      sourceKey:
+        type: string
+        description: Natural Key from the Source
+        example: '1021252'
+      name:
+        $ref: '#/definitions/PersonNameMultiLang'
+      gender:
+        type: string
+        description: Gender
+        example: MALE
+        enum:
+          - MALE
+          - FEMALE
+          - UNKNOWN
+      nationality:
+        type: string
+        description: Nationality
+        example: United Kingdom
+      countryOfResidence:
+        type: string
+        description: Country of Residence
+        example: United Arab Emirates
+      emiratesId:
+        $ref: '#/definitions/EmiratesId'
+      passport:
+        $ref: '#/definitions/Passport'
+      visa:
+        $ref: '#/definitions/Visa'
+      contact:
+        $ref: '#/definitions/Contact'
+      birthDate:
+        type: string
+        description: Date of Birth
+        format: date-time
+      imageUrl:
+        type: string
+        description: Image URL
+        example: '/agencies/did:rta:1021252/7c96c336f65e2.png'
+      attachments:
+        type: array
+        description: Attachments
+        items:
+          $ref: '#/definitions/Attachment'
+      driverLicense:
+        $ref: '#/definitions/DriverLicense'
+    description: Drivers
+  DriverLicense:
+    type: object
+    properties:
+      id:
+        type: string
+        description: Driving License ID
+        example: '78419771212212'
+      categories:
+        type: array
+        description: Driving License Category
+        items:
+          type: string
+          description: Driving License Category
+          example: Light Vehicles
+      issueDate:
+        type: string
+        description: Driving License Issued Date
+        example: '2020-09-01'
+      expiryDate:
+        type: string
+        description: Driving License Expiry Date
+        example: '2021-08-31'
+      issuedBy:
+        type: string
+        description: Driving License Issued By
+        example: Dubai
+      issuingAuthority:
+        type: string
+        description: Driving License Issuing Authority
+        example: UAE
+      issuingCountry:
+        type: string
+        description: Driving License Issuing Country
+        example: UAE
+    description: Driver License
+  Error:
+    type: object
+    additionalProperties: false
+    properties:
+      httpCode:
+        type: string
+        description: Error code
+      httpMessage:
+        type: string
+        description: Error description
+      moreInformation:
+        type: string
+        description: Detailed error description
+  Address:
+    type: object
+    properties:
+      label:
+        type: string
+        description: Address Label
+        example: work
+      address:
+        $ref: '#/definitions/MultiLang'
+      makani:
+        type: string
+        description: Makani Number
+        example: '2433087031'
+      poBox:
+        type: string
+        description: PO Box Number
+        example: '9226'
+      area:
+        $ref: '#/definitions/CodeName'
+      subArea:
+        $ref: '#/definitions/CodeName'
+      community:
+        $ref: '#/definitions/CodeName'
+      unit:
+        $ref: '#/definitions/CodeName'
+      building:
+        $ref: '#/definitions/CodeName'
+      street:
+        $ref: '#/definitions/CodeName'
+      city:
+        $ref: '#/definitions/CodeName'
+      region:
+        $ref: '#/definitions/CodeName'
+      country:
+        $ref: '#/definitions/CodeName'
+      postalCode:
+        type: string
+        description: Postal Code
+        example: '9226'
+      emirate:
+        $ref: '#/definitions/CodeName'
+      geoLocation:
+        $ref: '#/definitions/Geolocation'
+      preferred:
+        type: boolean
+        description: Preferred Address Flag
+        example: true
+    description: Addresses
+  PersonName:
+    type: object
+    properties:
+      title:
+        type: string
+        description: Title
+        example: Mr.
+      firstName:
+        type: string
+        description: First Name
+        example: John
+      middleName:
+        type: string
+        description: Middle Name
+        example: B
+      lastName:
+        type: string
+        description: Last Name
+        example: Doe
+      suffix:
+        type: string
+        description: Suffix
+        example: Jr.
+    description: Person Name in English
+  Passport:
+    type: object
+    properties:
+      passportType:
+        type: string
+        description: Passport Type
+        example: REGULAR
+      passportNumber:
+        type: string
+        description: Passport Number
+        example: '791234567'
+      issuedCountry:
+        type: string
+        description: Passport Issuing Country
+        example: United Kingdom
+      issuedPlace:
+        type: string
+        description: Passport Issued Place
+        example: London
+      issuedDate:
+        type: string
+        description: Passport Issued Date
+        format: date-time
+      expiryDate:
+        type: string
+        description: Passport Expiry Date
+        format: date-time
+    description: Passport
+  RentalDetails:
+    type: object
+    properties:
+      vehicle:
+        $ref: '#/definitions/VehicleHeader'
+      drivers:
+        type: array
+        description: Drivers
+        items:
+          $ref: '#/definitions/Driver'
+      startDate:
+        type: string
+        description: Start Date
+        format: date-time
+      expectedReturnDate:
+        type: string
+        description: Expected Return Date
+        format: date-time
+      readings:
+        type: array
+        description: Vehicle Reading
+        items:
+          $ref: '#/definitions/VehicleReading'
+      items:
+        type: array
+        description: Items
+        items:
+          $ref: '#/definitions/Item'
+      pickup:
+        $ref: '#/definitions/Pickup'
+      constraints:
+        type: array
+        description: Constraints
+        items:
+          $ref: '#/definitions/RentalConstraint'
+      payables:
+        type: array
+        description: Payables
+        items:
+          $ref: '#/definitions/RentalPayables'
+      electronicSignature:
+        type: string
+        description: Electronic Signature
+    description: Details
+  PersonNameMultiLang:
+    type: object
+    properties:
+      ar:
+        $ref: '#/definitions/PersonName'
+      en:
+        $ref: '#/definitions/PersonName'
+    description: First Name in Arabic and English
+  EmiratesId:
+    type: object
+    properties:
+      id:
+        type: string
+        description: Emirates ID
+        example: '78419771212212'
+      issueDate:
+        type: string
+        description: Emirates ID Issued Date
+        example: '2020-09-01'
+      expiryDate:
+        type: string
+        description: Emirates ID Expiry Date
+        example: '2021-08-31'
+    description: Emirates ID
+  Visa:
+    type: object
+    properties:
+      visaType:
+        type: string
+        description: Visa Type
+        example: RESIDENCE
+      file:
+        type: string
+        description: Visa File Number
+        example: 302/2018/1234567
+      uid:
+        type: string
+        description: Visa UID Number
+        example: '784197054649928'
+      issuedPlace:
+        type: string
+        description: Visa Issued Place
+        example: Dubai
+      issuedDate:
+        type: string
+        description: Visa Issued Date
+        format: date-time
+      expiryDate:
+        type: string
+        description: Visa Expiry Date
+        format: date-time
+      sponsor:
+        $ref: '#/definitions/MultiLang'
+      status:
+        type: string
+        description: Visa Status
+        example: ACTIVE
+    description: Visa
+  Contact:
+    type: object
+    properties:
+      addresses:
+        type: array
+        description: Addresses
+        items:
+          $ref: '#/definitions/Address'
+      phones:
+        type: array
+        description: Phones
+        items:
+          $ref: '#/definitions/Phone'
+      emails:
+        type: array
+        description: Emails
+        items:
+          $ref: '#/definitions/Email'
+    description: Contacts
+  Attachment:
+    type: object
+    properties:
+      label:
+        type: string
+        description: Attachment Label
+        example: passport
+      reference:
+        type: string
+        description: Attachment Reference UID
+        example: 'did:in:2232124123'
+      url:
+        type: string
+        description: Attachment URL
+        example: /attachments/582342345
+      hash:
+        type: string
+        description: Attachment Hash
+        example: 4e76434eea3c9d9cf9cb10bbf3f4a74b
+    description: Attachments
+  VehicleHeader:
+    type: object
+    properties:
+      id:
+        type: integer
+        description: Unique Identifier for the Vehicle
+        format: int64
+        example: 1
+      did:
+        type: string
+        description: Decentralized Identifier for the Vehicle
+        example: 'did:rta:1GNCS18Z3M0115561'
+      source:
+        type: string
+        description: Source for the Decentralized ID
+        example: rta
+      sourceKey:
+        type: string
+        description: Natural Key from the Source
+        example: 1GNCS18Z3M0115561
+      versionHash:
+        type: string
+        description: Hash of all trackable attributes
+        example: 2fdc0177057d3a5c6c2c0821e01f4fa8d90f9a3bb7afd82b0db526af98d68de8
+      vin:
+        type: string
+        description: Vehicle Identification Number
+        example: 1GNCS18Z3M0115561
+      plate:
+        $ref: '#/definitions/Plate'
+    description: Vehicle
+  VehicleReading:
+    type: object
+    properties:
+      readAt:
+        type: string
+        description: Read Timestamp
+        format: date-time
+        example: '2020-07-01T16:20:04Z'
+      fuelLevel:
+        $ref: '#/definitions/Reading'
+      odometer:
+        $ref: '#/definitions/Reading'
+    description: Vehicle Reading
+  Item:
+    type: object
+    properties:
+      id:
+        type: integer
+        description: Unique Identifier for the Vehicle Category
+        format: int64
+        example: 1
+      did:
+        type: string
+        description: Decentralized Identifier for the Vehicle Category
+        example: 'did:agency:1234'
+      agency:
+        $ref: '#/definitions/AgencyHeader'
+      name:
+        $ref: '#/definitions/MultiLang'
+      standardName:
+        $ref: '#/definitions/MultiLang'
+      imageUrl:
+        type: string
+        description: Image URL
+        example: '/agencies/did:rta:1021252/7c96c336f65e2.png'
+      description:
+        $ref: '#/definitions/MultiLang'
+      details:
+        $ref: '#/definitions/ItemDetails'
+      status:
+        type: string
+        description: Status
+        example: ACTIVE
+        enum:
+          - ACTIVE
+          - INACTIVE
+          - ARCHIVED
+      createdBy:
+        type: string
+        description: Audit Field - Created By
+        example: tars
+      updatedBy:
+        type: string
+        description: Audit Field - Updated By
+        example: tars
+      createdAt:
+        type: string
+        description: Audit Field - Created Timestamp
+        format: date-time
+        example: '2020-04-04T16:04:04Z'
+      updatedAt:
+        type: string
+        description: Audit Field - Updated Timestamp
+        format: date-time
+        example: '2020-04-04T16:04:04Z'
+    description: Items
+  ItemDetails:
+    type: object
+    properties:
+      rates:
+        $ref: '#/definitions/Rate'
+    description: Vehicle Category Details
+  Pickup:
+    type: object
+    properties:
+      pickupDate:
+        type: string
+        description: Pickup Date
+        format: date-time
+      pickupTime:
+        type: string
+        description: Pickup Time
+        example: '09:00'
+      address:
+        $ref: '#/definitions/Address'
+    description: Pickup Details
+  RentalConstraint:
+    type: object
+    properties:
+      kind:
+        type: string
+        description: Type of Constraint
+        example: DISTANCE
+      value:
+        type: string
+        description: Value
+        example: '5000'
+      valueType:
+        type: string
+        description: Data Type for Constraint Value
+        example: Integer
+    description: Constraints
+  RentalPayables:
+    type: object
+    properties:
+      paymentDate:
+        type: string
+        description: Data of payment due or actual payment
+        format: date-time
+      kind:
+        type: string
+        description: Kind of Payable Amount
+        example: RENT
+      periodicity:
+        type: string
+        description: Periodicity
+        example: DAILY
+      value:
+        $ref: '#/definitions/Amount'
+      references:
+        $ref: '#/definitions/References'
+  MultiLang:
+    type: object
+    properties:
+      en:
+        type: string
+        description: English
+        example: English
+      ar:
+        type: string
+        description: Arabic
+        example: عربي
+    description: Name in Arabic and English
+  Email:
+    type: object
+    properties:
+      label:
+        type: string
+        description: Email Label
+        example: personal
+      email:
+        type: string
+        description: Email
+        example: john.doe@example.com
+      preferred:
+        type: boolean
+        description: Preferred Email Flag
+        example: true
+    description: Emails
+  Phone:
+    type: object
+    properties:
+      label:
+        type: string
+        description: Phone Label
+        example: work
+      countryCode:
+        type: string
+        description: Country Code
+        example: '+971'
+      phone:
+        type: string
+        description: Phone
+        example: '43435353'
+      extension:
+        type: string
+        description: Extension
+        example: '1234'
+      preferred:
+        type: boolean
+        description: Preferred Phone Flag
+        example: true
+    description: Phones
+  Plate:
+    type: object
+    properties:
+      category:
+        $ref: '#/definitions/MultiLang'
+      code:
+        $ref: '#/definitions/MultiLang'
+      number:
+        type: string
+      source:
+        $ref: '#/definitions/MultiLang'
+      status:
+        type: string
+  Reading:
+    type: object
+    properties:
+      unit:
+        type: string
+        example: km
+      value:
+        type: integer
+        example: 1000
+  AgencyHeader:
+    type: object
+    properties:
+      id:
+        type: integer
+        description: Unique Identifier for the Agency
+        format: int64
+        example: 1
+      did:
+        type: string
+        description: Decentralized Identifier for the Agency
+        example: 'did:eid:784199952698752'
+      source:
+        type: string
+        description: Source for the Decentralized ID
+        example: eid
+      sourceKey:
+        type: string
+        description: Natural Key from the Source
+        example: '784199952698752'
+      versionHash:
+        type: string
+        description: Hash of all trackable attributes
+        example: 2fdc0177057d3a5c6c2c0821e01f4fa8d90f9a3bb7afd82b0db526af98d68de8
+      name:
+        $ref: '#/definitions/MultiLang'
+      tradeLicenseNumber:
+        type: string
+        description: 'tradeLicenseNumber '
+        example: '12764548'
+    description: Decentralized Identifier for the Parent Agency
+  Rate:
+    type: object
+    properties:
+      oneTimeRate:
+        $ref: '#/definitions/Amount'
+      dailyRate:
+        $ref: '#/definitions/Amount'
+      weeklyRate:
+        $ref: '#/definitions/Amount'
+      monthlyRate:
+        $ref: '#/definitions/Amount'
+      yearlyRate:
+        $ref: '#/definitions/Amount'
+    description: Default Rates for vehicles in the category
+  Amount:
+    type: object
+    properties:
+      currencyCode:
+        type: string
+        description: Currency Code
+        example: AED
+      value:
+        type: number
+        description: Value
+        format: double
+        example: 100
+    description: Yearly Rate
+  ContractReturnDetails:
+    type: object
+    properties:
+      vehicle:
+        $ref: '#/definitions/VehicleHeader'
+      returnedDate:
+        type: string
+        description: Returned Date
+        format: date-time
+      readings:
+        type: array
+        description: Vehicle Reading
+        items:
+          $ref: '#/definitions/VehicleReading'
+    description: Return
+  Charge:
+    type: object
+    properties:
+      id:
+        type: integer
+        description: Unique Identifier for the Charge
+        format: int64
+        example: 1
+      did:
+        type: string
+        description: Decentralized Identifier for the Charge
+        example: 'did:salik:12345'
+      source:
+        type: string
+        description: Source for the Decentralized ID
+        example: salik
+      sourceKey:
+        type: string
+        description: Natural Key from the Source
+        example: '12345'
+      versionHash:
+        type: string
+        description: Hash of all trackable attributes
+        example: 2fdc0177057d3a5c6c2c0821e01f4fa8d90f9a3bb7afd82b0db526af98d68de8
+      vehicle:
+        $ref: '#/definitions/VehicleHeader'
+      plate:
+        $ref: '#/definitions/Plate'
+      chargedOn:
+        type: string
+        description: Charge Created Timestamp
+        format: date-time
+        example: '2020-06-15T12:29:30Z'
+      chargeDetails:
+        $ref: '#/definitions/ChargeDetails'
+      createdBy:
+        type: string
+        description: Audit Field - Created By
+        example: tars
+      updatedBy:
+        type: string
+        description: Audit Field - Updated By
+        example: tars
+      createdAt:
+        type: string
+        description: Audit Field - Created Timestamp
+        format: date-time
+        example: '2020-06-15T12:30:30Z'
+      updatedAt:
+        type: string
+        description: Audit Field - Updated Timestamp
+        format: date-time
+        example: '2020-06-15T12:30:30Z'
+    description: Charges
+  ChargeDetails:
+    type: object
+    properties:
+      tolls:
+        type: array
+        description: Tolls
+        items:
+          $ref: '#/definitions/Toll'
+      fines:
+        type: array
+        description: Tolls
+        items:
+          $ref: '#/definitions/Fine'
+      parkings:
+        type: array
+        description: Tolls
+        items:
+          $ref: '#/definitions/Parking'
+    description: Details
+  Fine:
+    type: object
+    properties:
+      issueDate:
+        type: string
+        description: Issued Date
+        format: date-time
+      reference:
+        type: string
+        description: Reference
+        example: W249284234
+      value:
+        $ref: '#/definitions/Amount'
+      discount:
+        $ref: '#/definitions/Amount'
+    description: Tolls
+  Parking:
+    type: object
+    properties:
+      issueDate:
+        type: string
+        description: Issued Date
+        format: date-time
+      reference:
+        type: string
+        description: Reference
+        example: W249284234
+      value:
+        $ref: '#/definitions/Amount'
+    description: Tolls
+  Toll:
+    type: object
+    properties:
+      issueDate:
+        type: string
+        description: Issued Date
+        format: date-time
+      reference:
+        type: string
+        description: Reference
+        example: W249284234
+      value:
+        $ref: '#/definitions/Amount'
+    description: Tolls
+  RentalReturnArray:
+    type: array
+    items:
+      $ref: '#/definitions/RentalReturn'
+  CodeName:
+    type: object
+    properties:
+      code:
+        type: string
+        description: Code
+      name:
+        $ref: '#/definitions/MultiLang'
+    description: Emirate
+  Geolocation:
+    type: object
+    properties:
+      latitude:
+        type: number
+        description: Latitude
+        format: double
+        example: 25.1892807
+      longitude:
+        type: number
+        description: Longitude
+        format: double
+        example: 55.2561466
+    description: Geolocation
+  RentalArray:
+    type: array
+    items:
+      $ref: '#/definitions/Rental'
+  BatchResponse:
+    type: object
+    description: BatchResponse object to give status of contract creation or update.
+    properties:
+      id:
+        type: number
+        description: The id of the job
+      startDatetime:
+        type: string
+        format: date-time
+        description: The UTC datetime when the job was started.
+      endDatetime:
+        type: string
+        format: date-time
+        description: The UTC datetime when the job ended.
+      status:
+        type: string
+        enum:
+          - STARTED
+          - COMPLETED
+        description: The current status of the job.
+      exitCode:
+        type: string
+        description: This tells how the job stopped.
+      exitMessage:
+        type: string
+        description: >-
+          Any details related to how the job exited.  In case of failure this
+          will include the error details.
+      lastUpdated:
+        type: string
+        format: date-time
+        description: The UTC datetime when the job last updated.
+      uid:
+        type: string
+        description: A unique string value that identifies the resource.
+    example:
+      id: 1
+      startDatetime: '2020-07-13T15:32:28Z'
+      endDatetime: '2020-07-13T16:00:00Z'
+      status: COMPLETED
+      exitCode: SUCCESS
+      exitMessage: Successfully created contract.
+      lastUpdated: '2020-07-13T16:00:00Z'
+      uid: 'tars:rta:2020:avis:1213'
+  PostContractResponse:
+    type: object
+    properties:
+      status:
+        type: integer
+        format: int64
+        example: 202
+      did:
+        type: string
+        description: Decentralized Identifier for the Agency
+        example: 'did:rta:1'
+      documentNumber:
+        type: string
+        description: Document number of the contract
+        example: '1'
+  Rentals:
+    type: object
+    properties:
+      kind:
+        type: string
+        description: Kind of contract
+        example: B2C
+      documentNumber:
+        type: string
+        description: Decentralized Identifier for the Agency
+        example: '1234'
+      documentDateTime:
+        $ref: '#/definitions/Date'
+      createdBy:
+        type: string
+      updatedBy:
+        type: string
+      createdAt:
+        $ref: '#/definitions/Date'
+      updatedAt:
+        $ref: '#/definitions/Date'
+      customer:
+        $ref: '#/definitions/RentalsCustomer'
+      details:
+        $ref: '#/definitions/ContractDetails'
+      references:
+        $ref: '#/definitions/ContractReferences'
+  RentalsCustomer:
+    type: object
+    properties:
+      did:
+        type: string
+        description: Decentralized Identifier for the Agency
+        example: 'did:rta:1021252'
+      source:
+        type: string
+        description: Source for the decentralized ID
+        example: tars
+      sourceKey:
+        type: string
+        description: Natural Key from the Source
+        example: '1021252'
+      name:
+        type: object
+        properties:
+          ar:
+            $ref: '#/definitions/NameDetail'
+          en:
+            $ref: '#/definitions/NameDetail'
+      gender:
+        type: string
+        enum:
+          - MALE
+          - FEMALE
+          - UNKNOWN
+      nationality:
+        type: string
+        example: United Kingdom
+      countryOfResidence:
+        type: string
+        example: United Arab Emirates
+      emiratesId:
+        type: object
+        properties:
+          id:
+            type: string
+          issueDate:
+            type: string
+            format: date
+            example: '2020-09-01'
+          expiryDate:
+            type: string
+            format: Date
+            example: '2021-08-31'
+      passport:
+        $ref: '#/definitions/Passport'
+      visa:
+        $ref: '#/definitions/Visa'
+      contact:
+        $ref: '#/definitions/Contact'
+      birthDate:
+        $ref: '#/definitions/Date'
+      attachments:
+        type: array
+        items:
+          type: object
+          properties:
+            hash:
+              type: string
+              description: Attachment hash
+            label:
+              type: string
+              description: Attachment label
+              example: passport
+            reference:
+              type: string
+              description: Attachment reference UID
+              example: 'did:in:2232124123'
+            url:
+              type: string
+              description: Attachment URL
+              example: /attachments/582342345
+      userId:
+        type: string
+        description: Portal User ID
+        example: Bob.d
+      accounts:
+        $ref: '#/definitions/ContractReferences'
+      preferences:
+        type: object
+        description: customer preferences for language and notification alerts
+        properties:
+          preferredLanguage:
+            type: string
+          preferredChannel:
+            type: string
+            enum:
+              - SMS
+              - EMAIL
+        example:
+          preferredChannel: EMAIL
+          preferredLanguage: EN
+  Phones:
+    type: array
+    items:
+      type: object
+      properties:
+        countryCode:
+          type: string
+          example: '+971'
+        extension:
+          type: string
+        label:
+          type: string
+          example: work
+        phone:
+          type: string
+        preferred:
+          type: boolean
+          description: Preferred phone flag
+  ContractDetails:
+    type: array
+    items:
+      type: object
+      properties:
+        constraints:
+          type: array
+          items:
+            type: object
+            properties:
+              kind:
+                type: string
+                example: DISTANCE
+              value:
+                type: string
+                example: '5000'
+              valueType:
+                type: string
+                example: Integer
+        drivers:
+          $ref: '#/definitions/Drivers'
+        electronicSignature:
+          type: string
+        expectedReturnDate:
+          $ref: '#/definitions/Date'
+        items:
+          $ref: '#/definitions/ContractItems'
+        payables:
+          $ref: '#/definitions/Payables'
+        pickup:
+          type: object
+          properties:
+            address:
+              $ref: '#/definitions/BasicAddress'
+            pickupDate:
+              $ref: '#/definitions/Date'
+            pickupTime:
+              type: string
+              example: '09:00'
+        readings:
+          $ref: '#/definitions/Readings'
+        startDate:
+          $ref: '#/definitions/Date'
+        vehicle:
+          $ref: '#/definitions/Vehicle'
+  ContractReferences:
+    type: object
+    additionalProperties: true
+    description: 'References such as Membership, Loyalty and Discounts'
+    example:
+      membership: 7634981659272872
+  CreatedUpdated:
+    type: object
+    properties:
+      createdBy:
+        type: string
+      updatedBy:
+        type: string
+      createdAt:
+        $ref: '#/definitions/Date'
+      updatedAt:
+        $ref: '#/definitions/Date'
+  Date:
+    type: string
+    description: The ISO 8601 date time.
+    format: date-time
+  NameDetail:
+    type: object
+    description: Name object.
+    properties:
+      title:
+        type: string
+        example: Mr.
+      firstName:
+        type: string
+        description: The first name.
+      middleName:
+        type: string
+        description: The middle name.
+      lastName:
+        type: string
+        description: The family name.
+      suffix:
+        type: string
+        description: The suffix.
+  Drivers:
+    type: array
+    items:
+      $ref: '#/definitions/Driver'
+    minItems: 1
+  ContractItems:
+    type: array
+    items:
+      $ref: '#/definitions/ContractItemsArray'
+  ContractItemsArray:
+    type: object
+    properties:
+      agency:
+        type: object
+        properties:
+          did:
+            type: string
+            description: Decentralized Identifier for the Vehicle Category
+          id:
+            type: number
+            description: Unique Identifier for the Vehicle Category
+          name:
+            $ref: '#/definitions/MultiLang'
+          source:
+            type: string
+          sourceKey:
+            type: string
+          versionHash:
+            type: string
+      description:
+        $ref: '#/definitions/MultiLang'
+      details:
+        type: object
+        properties:
+          rates:
+            type: object
+            properties:
+              oneTimeRate:
+                $ref: '#/definitions/Amount'
+              dailyRate:
+                $ref: '#/definitions/Amount'
+              weeklyRate:
+                $ref: '#/definitions/Amount'
+              monthlyRate:
+                $ref: '#/definitions/Amount'
+              yearlyRate:
+                $ref: '#/definitions/Amount'
+      did:
+        type: string
+        description: Decentralized Identifier for the Vehicle Category
+      id:
+        type: integer
+        description: Unique Identifier for the Vehicle Category
+      name:
+        $ref: '#/definitions/MultiLang'
+      standardName:
+        $ref: '#/definitions/MultiLang'
+      status:
+        type: string
+        enum:
+          - ACTIVE
+          - INACTIVE
+          - ARCHIVED
+      createdBy:
+        type: string
+      updatedBy:
+        type: string
+      createdAt:
+        $ref: '#/definitions/Date'
+      updatedAt:
+        $ref: '#/definitions/Date'
+  Payables:
+    type: array
+    items:
+      type: object
+      properties:
+        kind:
+          type: string
+          example: RENT
+        paymentDate:
+          $ref: '#/definitions/Date'
+        periodicity:
+          type: string
+          example: DAILY
+        references:
+          $ref: '#/definitions/ContractReferences'
+        value:
+          $ref: '#/definitions/Amount'
+  BasicAddress:
+    type: object
+    properties:
+      address:
+        $ref: '#/definitions/MultiLang'
+      area:
+        $ref: '#/definitions/EnArCode'
+      building:
+        $ref: '#/definitions/EnArCode'
+      city:
+        $ref: '#/definitions/EnArCode'
+      community:
+        $ref: '#/definitions/EnArCode'
+      country:
+        $ref: '#/definitions/EnArCode'
+      emirate:
+        $ref: '#/definitions/EnArCode'
+      geoLocation:
+        type: object
+        properties:
+          longitude:
+            type: number
+            format: float
+            description: The longitude of the address.
+          latitude:
+            type: number
+            format: float
+            description: The latitude of the address.
+      label:
+        type: string
+        example: work
+      makani:
+        type: string
+        description: Makani number
+        example: '2433087031'
+      poBox:
+        type: string
+        example: '9226'
+      postalCode:
+        type: string
+        example: '9226'
+      preferred:
+        type: boolean
+        example: true
+        description: Preferred address flag
+      region:
+        $ref: '#/definitions/EnArCode'
+      street:
+        $ref: '#/definitions/EnArCode'
+      subArea:
+        $ref: '#/definitions/EnArCode'
+      unit:
+        $ref: '#/definitions/EnArCode'
+  Readings:
+    type: array
+    items:
+      type: object
+      properties:
+        fuelLevel:
+          $ref: '#/definitions/Reading'
+        odometer:
+          $ref: '#/definitions/Reading'
+        readAt:
+          $ref: '#/definitions/Date'
+  Vehicle:
+    type: object
+    properties:
+      did:
+        type: string
+        description: Decentralized identifier for the vehicle
+      source:
+        type: string
+      sourceKey:
+        type: string
+      versionHash:
+        type: string
+      vin:
+        type: string
+      plate:
+        $ref: '#/definitions/Plate'
+  EnArCode:
+    type: object
+    properties:
+      code:
+        type: string
+      name:
+        $ref: '#/definitions/MultiLang'
+    description: >-
+      Object with properties en, ar, and code.  At least one of en or ar is
+      required.
+  Addresses:
+    type: array
+    items:
+      $ref: '#/definitions/BasicAddress'
+  Emails:
+    type: array
+    items:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        label:
+          type: string
+          example: personal
+        preferred:
+          type: boolean
+          description: Preferred email flag
+  Charges:
+    type: array
+    items:
+      type: object
+      properties:
+        did:
+          type: string
+          description: Decentralized identifier
+          example: 'did:salik:12345'
+        source:
+          type: string
+          example: salik
+        sourceKey:
+          type: string
+          example: '12345'
+        versionHash:
+          type: string
+          example: 2fdc0177057d3a5c6c2c0821e01f4fa8d90f9a3bb7afd82b0db526af98d68de8
+        vehicle:
+          $ref: '#/definitions/Vehicle'
+        plate:
+          $ref: '#/definitions/Plate'
+        chargedOn:
+          type: string
+          format: date-time
+        chargeDetails:
+          type: object
+          properties:
+            tolls:
+              type: array
+              items:
+                $ref: '#/definitions/BasicCharge'
+            fines:
+              type: array
+              items:
+                $ref: '#/definitions/Fines'
+            parkings:
+              type: array
+              items:
+                $ref: '#/definitions/BasicCharge'
+        createdBy:
+          type: string
+          example: tars
+        updatedBy:
+          type: string
+          example: tars
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+  Returns:
+    allOf:
+      - $ref: '#/definitions/Vehicle'
+      - type: object
+        properties:
+          returnedDate:
+            type: string
+            format: date-time
+          readings:
+            $ref: '#/definitions/Readings'
+  BasicCharge:
+    type: object
+    properties:
+      issueDate:
+        type: string
+        format: date-time
+      reference:
+        type: string
+        example: W249284234
+      value:
+        $ref: '#/definitions/Money'
+  Money:
+    type: object
+    properties:
+      currencyCode:
+        type: string
+        description: The currency code used conforming to ISO 4217.
+        default: AED
+      amount:
+        type: number
+        description: A positive number.
+        default: 0
+  Fines:
+    type: object
+    properties:
+      issueDate:
+        type: string
+        format: date-time
+      reference:
+        type: string
+        example: W249284234
+      value:
+        $ref: '#/definitions/Money'
+      discount:
+        $ref: '#/definitions/Money'
+  RentalReturn:
+    type: object
+    properties:
+      id:
+        type: integer
+        description: Unique Identifier for the Contract
+        format: int64
+        example: 1
+      kind:
+        type: string
+        description: Kind of Contract
+        example: B2C
+      did:
+        type: string
+        description: Decentralized Identifier for the Agency
+        example: 'did:rta:1021252'
+      source:
+        type: string
+        description: Source for the Decentralized ID
+        example: tars
+      sourceKey:
+        type: string
+        description: Contract Number from the Source
+        example: '1021252'
+      rentalCounter:
+        type: string
+        description: Rental Counter
+        example: 'did:ded:37283232'
+      documentNumber:
+        type: string
+        description: Document Number from the Source
+        example: '1021252'
+      documentDateTime:
+        type: string
+        description: Contract Date
+        format: date-time
+      employee:
+        $ref: '#/definitions/EmployeeHeader'
+      status:
+        type: string
+        description: Contract Status
+        example: ACTIVE
+        enum:
+          - ACTIVE
+          - CANCELED
+          - CLOSED
+      createdBy:
+        type: string
+        description: Audit Field - Created By
+        example: tars
+      updatedBy:
+        type: string
+        description: Audit Field - Updated By
+        example: tars
+      createdAt:
+        type: string
+        description: Audit Field - Created Timestamp
+        format: date-time
+        example: '2020-06-01T12:30:30Z'
+      updatedAt:
+        type: string
+        description: Audit Field - Updated Timestamp
+        format: date-time
+        example: '2020-06-01T12:30:30Z'
+      details:
+        type: array
+        description: Details
+        items:
+          $ref: '#/definitions/ContractReturnDetails'
+      charges:
+        type: array
+        description: Charges
+        items:
+          $ref: '#/definitions/Charge'
+      payments:
+        type: array
+        description: Payables
+        items:
+          $ref: '#/definitions/RentalPayables'
+  Rental:
+    type: object
+    properties:
+      id:
+        type: integer
+        description: Unique Identifier for the Contract
+        format: int64
+        example: 1
+      kind:
+        type: string
+        description: Kind of Contract
+        example: B2C
+      did:
+        type: string
+        description: Decentralized Identifier for the Agency
+        example: 'did:rta:1021252'
+      source:
+        type: string
+        description: Source for the Decentralized ID
+        example: tars
+      sourceKey:
+        type: string
+        description: Contract Number from the Source
+        example: '1021252'
+      rentalCounter:
+        type: string
+        description: Rental Counter
+        example: 'did:ded:37283232'
+      documentNumber:
+        type: string
+        description: Document Number from the Source
+        example: '1021252'
+      documentDateTime:
+        type: string
+        description: Contract Date
+        format: date-time
+      employee:
+        $ref: '#/definitions/EmployeeHeader'
+      status:
+        type: string
+        description: Contract Status
+        example: ACTIVE
+        enum:
+          - ACTIVE
+          - CANCELED
+          - CLOSED
+      createdBy:
+        type: string
+        description: Audit Field - Created By
+        example: tars
+      updatedBy:
+        type: string
+        description: Audit Field - Updated By
+        example: tars
+      createdAt:
+        type: string
+        description: Audit Field - Created Timestamp
+        format: date-time
+        example: '2020-06-01T12:30:30Z'
+      updatedAt:
+        type: string
+        description: Audit Field - Updated Timestamp
+        format: date-time
+        example: '2020-06-01T12:30:30Z'
+      customer:
+        $ref: '#/definitions/Customer'
+      details:
+        type: array
+        description: Details
+        items:
+          $ref: '#/definitions/RentalDetails'
+      references:
+        $ref: '#/definitions/References'
+  RentalUpdate:
+    type: object
+    properties:
+      id:
+        type: integer
+        description: Unique Identifier for the Contract
+        format: int64
+        example: 1
+      kind:
+        type: string
+        description: Kind of Contract
+        example: B2C
+      did:
+        type: string
+        description: Decentralized Identifier for the Agency
+        example: 'did:rta:1021252'
+      source:
+        type: string
+        description: Source for the Decentralized ID
+        example: tars
+      sourceKey:
+        type: string
+        description: Contract Number from the Source
+        example: '1021252'
+      rentalCounter:
+        type: string
+        description: Rental Counter
+        example: 'did:ded:37283232'
+      documentNumber:
+        type: string
+        description: Document Number from the Source
+        example: '1021252'
+      documentDateTime:
+        type: string
+        description: Contract Date
+        format: date-time
+      employee:
+        $ref: '#/definitions/EmployeeHeader'
+      status:
+        type: string
+        description: Contract Status
+        example: ACTIVE
+        enum:
+          - ACTIVE
+          - CANCELED
+          - CLOSED
+      createdBy:
+        type: string
+        description: Audit Field - Created By
+        example: tars
+      updatedBy:
+        type: string
+        description: Audit Field - Updated By
+        example: tars
+      createdAt:
+        type: string
+        description: Audit Field - Created Timestamp
+        format: date-time
+        example: '2020-06-01T12:30:30Z'
+      updatedAt:
+        type: string
+        description: Audit Field - Updated Timestamp
+        format: date-time
+        example: '2020-06-01T12:30:30Z'
+      customer:
+        $ref: '#/definitions/Customer'
+      details:
+        type: array
+        description: Details
+        items:
+          $ref: '#/definitions/RentalDetails'
+      references:
+        $ref: '#/definitions/References'
+      charges:
+        type: array
+        description: Charges
+        items:
+          $ref: '#/definitions/Charge'
+      payments:
+        type: array
+        description: Payables
+        items:
+          $ref: '#/definitions/RentalPayables'
+  RentalReplacement:
+    type: object
+    properties:
+      id:
+        type: integer
+        description: Unique Identifier for the Contract
+        format: int64
+        example: 1
+      kind:
+        type: string
+        description: Kind of Contract
+        example: B2C
+      did:
+        type: string
+        description: Decentralized Identifier for the Agency
+        example: 'did:rta:1021252'
+      source:
+        type: string
+        description: Source for the Decentralized ID
+        example: tars
+      sourceKey:
+        type: string
+        description: Contract Number from the Source
+        example: '1021252'
+      rentalCounter:
+        type: string
+        description: Rental Counter
+        example: 'did:ded:37283232'
+      documentNumber:
+        type: string
+        description: Document Number from the Source
+        example: '1021252'
+      documentDateTime:
+        type: string
+        description: Contract Date
+        format: date-time
+      employee:
+        $ref: '#/definitions/EmployeeHeader'
+      status:
+        type: string
+        description: Contract Status
+        example: ACTIVE
+        enum:
+          - ACTIVE
+          - CANCELED
+          - CLOSED
+      createdBy:
+        type: string
+        description: Audit Field - Created By
+        example: tars
+      updatedBy:
+        type: string
+        description: Audit Field - Updated By
+        example: tars
+      createdAt:
+        type: string
+        description: Audit Field - Created Timestamp
+        format: date-time
+        example: '2020-06-01T12:30:30Z'
+      updatedAt:
+        type: string
+        description: Audit Field - Updated Timestamp
+        format: date-time
+        example: '2020-06-01T12:30:30Z'
+      details:
+        type: array
+        description: Details
+        items:
+          $ref: '#/definitions/RentalDetails'
+      returns:
+        type: array
+        description: Return
+        items:
+          $ref: '#/definitions/ContractReturnDetails'
+      charges:
+        type: array
+        description: Charges
+        items:
+          $ref: '#/definitions/Charge'
+      payments:
+        type: array
+        description: Payables
+        items:
+          $ref: '#/definitions/RentalPayables'
+      references:
+        $ref: '#/definitions/References'
+  RentalSettlement:
+    type: object
+    properties:
+      id:
+        type: integer
+        description: Unique Identifier for the Contract
+        format: int64
+        example: 1
+      kind:
+        type: string
+        description: Kind of Contract
+        example: NRV
+      did:
+        type: string
+        description: Decentralized Identifier for the Agency
+        example: 'did:rta:1021252'
+      source:
+        type: string
+        description: Source for the Decentralized ID
+        example: tars
+      sourceKey:
+        type: string
+        description: Contract Number from the Source
+        example: '1021252'
+      rentalCounter:
+        type: string
+        description: Rental Counter
+        example: 'did:ded:37283232'
+      documentNumber:
+        type: string
+        description: Document Number from the Source
+        example: '1021252'
+      documentDateTime:
+        type: string
+        description: Contract Date
+        format: date-time
+      employee:
+        $ref: '#/definitions/EmployeeHeader'
+      status:
+        type: string
+        description: Contract Status
+        example: ACTIVE
+        enum:
+          - ACTIVE
+          - CANCELED
+          - CLOSED
+      createdBy:
+        type: string
+        description: Audit Field - Created By
+        example: tars
+      updatedBy:
+        type: string
+        description: Audit Field - Updated By
+        example: tars
+      createdAt:
+        type: string
+        description: Audit Field - Created Timestamp
+        format: date-time
+        example: '2020-06-01T12:30:30Z'
+      updatedAt:
+        type: string
+        description: Audit Field - Updated Timestamp
+        format: date-time
+        example: '2020-06-01T12:30:30Z'
+      charges:
+        type: array
+        description: Charges
+        items:
+          $ref: '#/definitions/Charge'
+      payments:
+        type: array
+        description: Payables
+        items:
+          $ref: '#/definitions/RentalPayables'
+  EmployeeHeader:
+    type: object
+    properties:
+      id:
+        type: integer
+        description: Unique Identifier for the Employee
+        format: int64
+        example: 1
+      did:
+        type: string
+        description: Decentralized Identifier for the Employee
+        example: 'did:eid:784199952698752'
+      employeeNumber:
+        type: string
+        description: Employee Number
+        example: '11313'
+      firstName:
+        $ref: '#/definitions/MultiLang'
+      familyName:
+        $ref: '#/definitions/MultiLang'
+      role:
+        type: string
+        description: Role
+        example: Manager
+      userId:
+        type: string
+        description: Portal User ID
+        example: john.doe@example.com
+    description: Employee
+  Customer:
+    type: object
+    properties:
+      id:
+        type: integer
+        description: Unique Identifier for the Agency
+        format: int64
+        example: 1
+      did:
+        type: string
+        description: Decentralized Identifier for the Agency
+        example: 'did:rta:1021252'
+      source:
+        type: string
+        description: Source for the Decentralized ID
+        example: rta
+      sourceKey:
+        type: string
+        description: Natural Key from the Source
+        example: '1021252'
+      name:
+        $ref: '#/definitions/PersonNameMultiLang'
+      gender:
+        type: string
+        description: Gender
+        example: MALE
+        enum:
+          - MALE
+          - FEMALE
+          - UNKNOWN
+      nationality:
+        type: string
+        description: Nationality
+        example: United Kingdom
+      countryOfResidence:
+        type: string
+        description: Country of Residence
+        example: United Arab Emirates
+      emiratesId:
+        $ref: '#/definitions/EmiratesId'
+      passport:
+        $ref: '#/definitions/Passport'
+      visa:
+        $ref: '#/definitions/Visa'
+      contact:
+        $ref: '#/definitions/Contact'
+      birthDate:
+        type: string
+        description: Date of Birth
+        format: date-time
+      imageUrl:
+        type: string
+        description: Image URL
+        example: '/agencies/did:rta:1021252/7c96c336f65e2.png'
+      attachments:
+        type: array
+        description: Attachments
+        items:
+          $ref: '#/definitions/Attachment'
+      userId:
+        type: string
+        description: Portal User ID
+        example: bob.d
+      preferences:
+        $ref: '#/definitions/Preferences'
+      accounts:
+        $ref: '#/definitions/Accounts'
+  Preferences:
+    type: object
+    properties:
+      language:
+        type: string
+        example: en
+  Accounts:
+    type: object
+    properties:
+      membership:
+        type: string
+        example: '7634981659272872'
+  References:
+    type: object
+    properties:
+      membership:
+        type: string
+        example: '7634981659272872'
+  BulkItems:
+    type: object
+    properties:
+      id:
+        type: string
+      status:
+        type: string
+      status_code:
+        type: number
+      message:
+        type: string
+      runAt:
+        type: string
+      doneAt:
+        type: string
+  BulkStatusResponse:
+    type: object
+    properties:
+      id:
+        type: string
+        description: Bulk Request ID
+        example: '1252'
+      method:
+        type: string
+      service:
+        type: string
+      createdAt:
+        type: string
+      lines:
+        type: array
+        description: Status of Items in the Bulk Request
+        items:
+          $ref: '#/definitions/BulkItems'
+  CreateBulkResponse:
+    type: object
+    additionalProperties: false
+    properties:
+      id:
+        type: string
+        description: Bulk Batch ID
+        example: '3'
+  RentalRequestBulk:
+    type: array
+    items:
+      $ref: '#/definitions/Rental'
+paths:
+  '/agencies/{agencyDid}/rentals/{did}':
+    get:
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/Rental'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Error'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
+        '405':
+          description: Method Not Allowed
+          schema:
+            $ref: '#/definitions/Error'
+        '422':
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Error'
+        '503':
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/Error'
+      operationId: fetchRentalById
+      description: Retrieve a B2C Rental Contract
+      tags:
+        - contracts
+      summary: Retrieve a B2C Rental Contract
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          description: Authentication Token
+          type: string
+        - name: agencyDid
+          in: path
+          required: true
+          description: Agency UUID
+          type: string
+        - name: did
+          in: path
+          required: true
+          description: Rental Contract ID
+          type: string
+        - name: X-IBM-Client-Id
+          in: header
+          required: true
+          description: Unique System Identifier
+          type: string
+      consumes: []
+      produces: []
+    parameters: []
+    patch:
+      responses:
+        '202':
+          description: Accepted
+          schema:
+            $ref: '#/definitions/PostContractResponse'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Error'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
+        '405':
+          description: Method Not Allowed
+          schema:
+            $ref: '#/definitions/Error'
+        '422':
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Error'
+        '503':
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/Error'
+      operationId: updateRentalById
+      description: Updates a B2C Rental Contract
+      tags:
+        - contracts
+      summary: Updates a B2C Rental Contract
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          description: Authentication Token
+          type: string
+        - name: X-IBM-Client-Id
+          in: header
+          required: true
+          description: Unique System Identifier
+          type: string
+        - name: agencyDid
+          in: path
+          required: true
+          description: Agency UUID
+          type: string
+        - name: did
+          in: path
+          required: true
+          description: Rental Contract ID
+          type: string
+        - name: request
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/RentalUpdate'
+        - name: x-notification-url
+          in: header
+          required: false
+          description: Notification URL
+          type: string
+        - name: x-callback-url
+          in: header
+          required: false
+          description: Callback URL
+          type: string
+      consumes: []
+      produces: []
+    delete:
+      responses:
+        '202':
+          description: Accepted
+          schema:
+            $ref: '#/definitions/PostContractResponse'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Error'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
+        '405':
+          description: Method Not Allowed
+          schema:
+            $ref: '#/definitions/Error'
+        '422':
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Error'
+        '503':
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/Error'
+      operationId: deleteRental
+      description: Delete a Rental Contract
+      tags:
+        - contracts
+      summary: Delete a Rental Contract
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          description: Authentication Token
+          type: string
+        - name: X-IBM-Client-Id
+          in: header
+          required: true
+          description: Unique System Identifier
+          type: string
+        - name: agencyDid
+          in: path
+          required: true
+          description: Agency UUID
+          type: string
+        - name: did
+          in: path
+          required: true
+          description: Rental Contract ID
+          type: string
+        - name: x-notification-url
+          in: header
+          required: false
+          description: Notification URL
+          type: string
+        - name: x-callback-url
+          in: header
+          required: false
+          description: Callback URL
+          type: string
+      consumes: []
+      produces: []
+  '/bulk/agencies/{agencyDid}/rentals':
+    post:
+      responses:
+        '202':
+          description: Accepted
+          schema:
+            $ref: '#/definitions/CreateBulkResponse'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Error'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
+        '405':
+          description: Method Not Allowed
+          schema:
+            $ref: '#/definitions/Error'
+        '422':
+          description: Unprocessed Entity
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Error'
+        '503':
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/Error'
+      consumes: []
+      produces: []
+      operationId: addBulk
+      tags:
+        - 'contracts:bulk'
+      summary: Add rental contracts in bulk
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          description: Authentication Token
+          type: string
+        - name: agencyDid
+          in: path
+          required: true
+          description: TARS Agency Identifier
+          type: string
+        - name: X-IBM-Client-Id
+          in: header
+          required: true
+          description: Unique System Identifier
+          type: string
+        - name: vehicleCategoryRequest
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/RentalRequestBulk'
+        - name: x-notification-url
+          in: header
+          required: false
+          description: Notification URL
+          type: string
+      description: Add rental contracts in bulk
+  '/bulk/agencies/{agencyDid}/rentals/requests/{id}':
+    get:
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/BulkStatusResponse'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Error'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
+        '405':
+          description: Method Not Allowed
+          schema:
+            $ref: '#/definitions/Error'
+        '422':
+          description: Unprocessed Entity
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Error'
+        '503':
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/Error'
+      consumes: []
+      produces: []
+      operationId: getBulk
+      tags:
+        - 'contracts:bulk'
+      summary: Fetch bulk request status
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          description: Authentication Token
+          type: string
+        - name: agencyDid
+          in: path
+          required: true
+          description: TARS Agency Identifier
+          type: string
+        - name: id
+          in: path
+          required: true
+          description: Bulk Batch ID
+          type: string
+        - name: X-IBM-Client-Id
+          in: header
+          required: true
+          description: Unique System Identifier
+          type: string
+      description: Fetch bulk request status
+  '/agencies/{agencyDid}/rentals':
+    post:
+      description: 'This will create B2C, NRV, Maintainence and Borrowing contracts'
+      summary: This will create a rental contract
+      tags:
+        - contracts
+      operationId: createContract
+      deprecated: false
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: X-IBM-Client-Id
+          in: header
+          required: true
+          description: Unique System  Identifier
+          type: string
+        - name: Authorization
+          in: header
+          required: true
+          description: Authentication Token
+          type: string
+        - name: request
+          in: body
+          required: true
+          description: TARS contract
+          schema:
+            $ref: '#/definitions/Rental'
+        - name: agencyDid
+          in: path
+          required: true
+          description: TARS agency UUID
+          type: string
+        - name: x-notification-url
+          in: header
+          required: false
+          description: Notification URL
+          type: string
+        - name: x-callback-url
+          in: header
+          required: false
+          description: Callback URL
+          type: string
+      responses:
+        '202':
+          description: Accepted
+          schema:
+            $ref: '#/definitions/PostContractResponse'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Error'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
+        '405':
+          description: Method Not Allowed
+          schema:
+            $ref: '#/definitions/Error'
+        '422':
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Error'
+        '503':
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/Error'
+  '/agencies/{agencyDid}/rentals/{did}/replacements':
+    post:
+      responses:
+        '202':
+          description: Accepted
+          schema:
+            $ref: '#/definitions/PostContractResponse'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Error'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
+        '405':
+          description: Method Not Allowed
+          schema:
+            $ref: '#/definitions/Error'
+        '422':
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Error'
+        '503':
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/Error'
+      operationId: replaceRentals
+      description: Replace a specific rental vehicle
+      tags:
+        - contracts
+      summary: Replace a specific rental vehicle
+      parameters:
+        - name: X-IBM-Client-Id
+          in: header
+          required: true
+          description: Unique System  Identifier
+          type: string
+        - name: Authorization
+          in: header
+          required: true
+          description: Authentication Token
+          type: string
+        - name: request
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/RentalReplacement'
+        - name: agencyDid
+          in: path
+          required: true
+          description: TARS agency UUID
+          type: string
+        - name: did
+          in: path
+          required: true
+          description: Rental Contract ID
+          type: string
+        - name: x-notification-url
+          in: header
+          required: false
+          description: Notification URL
+          type: string
+        - name: x-callback-url
+          in: header
+          required: false
+          description: Callback URL
+          type: string
+      consumes: []
+      produces: []
+  '/agencies/{agencyDid}/rentals/{did}/events/return':
+    post:
+      responses:
+        '202':
+          description: Accepted
+          schema:
+            $ref: '#/definitions/PostContractResponse'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Error'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
+        '405':
+          description: Method Not Allowed
+          schema:
+            $ref: '#/definitions/Error'
+        '422':
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Error'
+        '503':
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/Error'
+      operationId: returnRental
+      description: Return a specific rental contract
+      tags:
+        - contracts
+      summary: Return a specific rental contract
+      parameters:
+        - name: X-IBM-Client-Id
+          in: header
+          required: true
+          description: Unique System  Identifier
+          type: string
+        - name: Authorization
+          in: header
+          required: true
+          description: Authentication Token
+          type: string
+        - name: request
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/RentalReturn'
+        - name: agencyDid
+          in: path
+          required: true
+          description: TARS agency UUID
+          type: string
+        - name: did
+          in: path
+          required: true
+          description: Rental Contract ID
+          type: string
+        - name: x-notification-url
+          in: header
+          required: false
+          description: Notification URL
+          type: string
+        - name: x-callback-url
+          in: header
+          required: false
+          description: Callback URL
+          type: string
+      consumes: []
+      produces: []
+    get:
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/RentalReturnArray'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Error'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
+        '405':
+          description: Method Not Allowed
+          schema:
+            $ref: '#/definitions/Error'
+        '422':
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Error'
+        '503':
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/Error'
+      operationId: getReturnList
+      description: Get a list of returns for a specified rental contract
+      tags:
+        - contracts
+      summary: Get a list of returns for a specified rental contract
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          description: Authentication Token
+          type: string
+        - name: X-IBM-Client-Id
+          in: header
+          required: true
+          description: Unique System  Identifier
+          type: string
+        - name: agencyDid
+          in: path
+          required: true
+          description: TARS agency UUID
+          type: string
+        - name: did
+          in: path
+          required: true
+          description: Contract ID
+          type: string
+      consumes: []
+      produces: []
+  '/agencies/{agencyDid}/rentals/{did}/events/settle':
+    post:
+      responses:
+        '202':
+          description: Accepted
+          schema:
+            $ref: '#/definitions/PostContractResponse'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Error'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
+        '405':
+          description: Method Not Allowed
+          schema:
+            $ref: '#/definitions/Error'
+        '422':
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Error'
+        '503':
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/Error'
+      operationId: settleRentals
+      description: Settle a rental contract
+      tags:
+        - contracts
+      summary: Settle a rental contract
+      parameters:
+        - name: X-IBM-Client-Id
+          in: header
+          required: true
+          description: Unique System  Identifier
+          type: string
+        - name: Authorization
+          in: header
+          required: true
+          description: Authentication Token
+          type: string
+        - name: agencyDid
+          in: path
+          required: true
+          description: TARS agency UUID
+          type: string
+        - name: did
+          in: path
+          required: true
+          description: Rental Contract ID
+          type: string
+        - name: x-callback-url
+          in: header
+          required: false
+          description: Callback URL
+          type: string
+        - name: request
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/RentalSettlement'
+      consumes: []
+      produces: []
